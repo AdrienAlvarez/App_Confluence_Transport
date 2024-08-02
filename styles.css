@@ -116,6 +116,14 @@ h1 {
     background-color: green;
 }
 
+/* Ajout pour le message de résultat */
+.result-message {
+    font-size: 1rem; /* Réduire la taille de la police */
+    text-align: center;
+    line-height: 1.5; /* Pour un meilleur espacement entre les lignes */
+    white-space: pre-line; /* Pour permettre l'interprétation des sauts de ligne */
+}
+
 @media (max-width: 576px) {
     h1 {
         font-size: 1.6rem;
