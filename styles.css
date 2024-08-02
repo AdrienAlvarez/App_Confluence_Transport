@@ -28,7 +28,6 @@ body {
 h1 {
     font-size: 1.8rem;
     margin-bottom: 20px;
-    color: #2c3e50;
     text-align: center;
 }
 
@@ -88,14 +87,33 @@ h1 {
 .results h2 {
     margin-bottom: 15px;
     font-size: 1.6rem;
-    color: #27ae60;
     text-align: center;
 }
 
-.results p {
-    font-size: 1rem;
-    margin-bottom: 10px;
-    text-align: center;
+/* Custom styles for different result scenarios */
+.red-text {
+    color: red;
+}
+
+.yellow-text {
+    color: yellow;
+}
+
+.green-text {
+    color: green;
+}
+
+.btn-red {
+    background-color: red;
+}
+
+.btn-yellow {
+    background-color: yellow;
+    color: black; /* Pour rendre le texte visible sur le bouton jaune */
+}
+
+.btn-green {
+    background-color: green;
 }
 
 @media (max-width: 576px) {
