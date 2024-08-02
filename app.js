@@ -97,12 +97,12 @@ document.getElementById('freight-form').addEventListener('submit', function(even
     const { marge, coutTotalFret } = calculerRentabilite(distanceKm, prixVenteFret, crk, coutPeage, coutTransporteur);
     const indice = indiceRentabilite(marge);
 
-    // Afficher les résultats
-    document.getElementById('marge').textContent = `Marge: ${marge.toFixed(2)}%`;
-    document.getElementById('crk').textContent = `CRK: ${crk.toFixed(4)} €/km`;
-    document.getElementById('cout_total_fret').textContent = `Coût total du fret: ${coutTotalFret.toFixed(2)} €`;
-    document.getElementById('indice').textContent = `Indice de rentabilité: ${indice}`;
+    // Stocker les résultats dans le localStorage
+    localStorage.setItem('marge', marge.toFixed(2));
+    localStorage.setItem('crk', crk.toFixed(4));
+    localStorage.setItem('coutTotalFret', coutTotalFret.toFixed(2));
+    localStorage.setItem('indice', indice);
 
-    // Montrer la section des résultats
-    document.getElementById('results').style.display = 'block';
+    // Rediriger vers la page des résultats
+    window.location.href = 'result.html';
 });
