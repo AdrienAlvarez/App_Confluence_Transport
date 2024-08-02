@@ -119,6 +119,8 @@ h1 {
 .result-message {
     font-size: 1rem; /* Aligné avec la taille du texte du bouton "Retour" */
     text-align: center;
+    font-weight: bold; /* Ajoute du poids au texte, comme le bouton */
+    margin-top: 20px; /* Ajoute un peu de marge pour espacer le texte */
 }
 
 @media (max-width: 576px) {
