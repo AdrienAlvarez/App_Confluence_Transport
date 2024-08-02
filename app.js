@@ -71,23 +71,34 @@ function indiceRentabilite(marge) {
         return "Jaune";
     } else if (marge > 33) {
         return "Vert";
+    } else {
+        return "Rouge"; // Ajouté pour couvrir le cas intermédiaire
     }
 }
 
-// Exemple de données pour le calcul
-const prixVenteFret = 480;
-const heuresJour = 6.26;
-const heuresNuit = 0;
-const distanceKm = 500;
-const coutPeage = 15;
+// Gérer la soumission du formulaire et afficher les résultats
+document.getElementById('freight-form').addEventListener('submit', function(event) {
+    event.preventDefault();
 
-// Calcul des coûts
-const coutTransporteur = calculerCoutTransporteur(heuresJour, heuresNuit);
-const crk = calculerCrk(distanceKm, prix_carburant_litre);
-const { marge, coutTotalFret } = calculerRentabilite(distanceKm, prixVenteFret, crk, coutPeage, coutTransporteur);
-const indice = indiceRentabilite(marge);
+    // Récupérer les valeurs du formulaire
+    const prixVenteFret = parseFloat(document.getElementById('prix_vente_fret').value);
+    const heuresJour = parseFloat(document.getElementById('heures_jour').value);
+    const heuresNuit = parseFloat(document.getElementById('heures_nuit').value);
+    const distanceKm = parseFloat(document.getElementById('distance_km').value);
+    const coutPeage = parseFloat(document.getElementById('cout_peage').value);
 
-console.log(`Marge: ${marge.toFixed(2)}%`);
-console.log(`CRK: ${crk.toFixed(4)} €/km`);
-console.log(`Coût total du fret: ${coutTotalFret.toFixed(2)} €`);
-console.log(`Indice de rentabilité: ${indice}`);
+    // Calculer les coûts
+    const coutTransporteur = calculerCoutTransporteur(heuresJour, heuresNuit);
+    const crk = calculerCrk(distanceKm, prix_carburant_litre);
+    const { marge, coutTotalFret } = calculerRentabilite(distanceKm, prixVenteFret, crk, coutPeage, coutTransporteur);
+    const indice = indiceRentabilite(marge);
+
+    // Afficher les résultats
+    document.getElementById('marge').textContent = `Marge: ${marge.toFixed(2)}%`;
+    document.getElementById('crk').textContent = `CRK: ${crk.toFixed(4)} €/km`;
+    document.getElementById('cout_total_fret').textContent = `Coût total du fret: ${coutTotalFret.toFixed(2)} €`;
+    document.getElementById('indice').textContent = `Indice de rentabilité: ${indice}`;
+
+    // Montrer la section des résultats
+    document.getElementById('results').style.display = 'block';
+});
