@@ -39,11 +39,11 @@ for (let prix of station_data.prix) {
 
 // Si le prix du Gazole n'est pas trouvé, il faut arrêter le programme
 if (prix_carburant_litre === null) {
+    alert("Prix du Gazole introuvable dans les données fournies.");
     throw new Error("Prix du Gazole introuvable dans les données fournies.");
 }
 
 function calculerCoutTransporteur(heuresJour, heuresNuit) {
-    // Calcule le coût total pour payer le chauffeur en fonction des heures travaillées de jour et de nuit, en incluant les charges sociales.
     const salaireJour = heuresJour * salaire_heure_jour;
     const salaireNuit = heuresNuit * salaire_heure_nuit;
     const salaireBrut = salaireJour + salaireNuit;
@@ -51,15 +51,13 @@ function calculerCoutTransporteur(heuresJour, heuresNuit) {
 }
 
 function calculerCrk(distanceKm, prixCarburantLitre) {
-    // Calcule le coût total par kilomètre parcouru (CRK), en incluant les coûts du carburant, des lubrifiants, des pneus et des réparations.
     const carburantKm = consommation_tgx * prixCarburantLitre;
     const chargesVariablesKm = carburantKm + lubrifiant_km + pneumatique_km + entretien_reparations_km;
     return chargesVariablesKm;
 }
 
 function calculerRentabilite(distanceKm, prixVenteFret, crk, coutPeage, coutTransporteur) {
-    // Calcule la marge de rentabilité et le coût total pour un fret, en utilisant le CRK, la distance à parcourir, le prix de vente du fret, et les coûts de péage.
-    const coutTotalFret = (crk * distanceKm) + (coutPeage * 4) + coutTransporteur;  // Multiplication du coût de péage par 4 (pour le classe 4 du Man TGX)
+    const coutTotalFret = (crk * distanceKm) + (coutPeage * 4) + coutTransporteur;
     const marge = ((prixVenteFret - coutTotalFret) / prixVenteFret) * 100;
     return { marge, coutTotalFret };
 }
@@ -72,7 +70,7 @@ function indiceRentabilite(marge) {
     } else if (marge > 33) {
         return "Vert";
     } else {
-        return "Rouge"; // Ajouté pour couvrir le cas intermédiaire
+        return "Rouge";
     }
 }
 
@@ -86,6 +84,12 @@ document.getElementById('freight-form').addEventListener('submit', function(even
     const heuresNuit = parseFloat(document.getElementById('heures_nuit').value);
     const distanceKm = parseFloat(document.getElementById('distance_km').value);
     const coutPeage = parseFloat(document.getElementById('cout_peage').value);
+
+    // Vérification des valeurs
+    if (isNaN(prixVenteFret) || isNaN(heuresJour) || isNaN(heuresNuit) || isNaN(distanceKm) || isNaN(coutPeage)) {
+        alert("Veuillez remplir correctement tous les champs.");
+        return;
+    }
 
     // Calculer les coûts
     const coutTransporteur = calculerCoutTransporteur(heuresJour, heuresNuit);
