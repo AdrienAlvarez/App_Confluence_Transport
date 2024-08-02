@@ -6,19 +6,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultMessage = document.getElementById('result-message');
     const retourBtn = document.getElementById('retour-btn');
 
+    let messageText = '';
+
     if (marge < 20) {
-        resultMessage.textContent = `La marge de ${marge}% est insuffisante pour réaliser ce transport.`;
+        messageText = `La marge de ${marge}% est insuffisante\n\npour réaliser ce transport.`;
         resultTitle.style.color = 'red';
         retourBtn.style.backgroundColor = 'red';
     } else if (marge >= 20 && marge <= 27) {
-        resultMessage.textContent = `La marge de ${marge}% est acceptable, mais reste moyenne pour ce transport.`;
+        messageText = `La marge de ${marge}% est acceptable\n\nmais reste moyenne pour ce transport.`;
         resultTitle.style.color = 'yellow';
         retourBtn.style.backgroundColor = 'yellow';
     } else {
-        resultMessage.textContent = `La marge de ${marge}% est excellente, vous pouvez effectuer ce transport en toute confiance.`;
+        messageText = `La marge de ${marge}% est excellente\n\nvous pouvez effectuer ce transport en toute confiance.`;
         resultTitle.style.color = 'green';
         retourBtn.style.backgroundColor = 'green';
     }
+
+    resultMessage.textContent = messageText;
+    resultMessage.classList.add('result-message');
 
     // Gestion du bouton retour
     retourBtn.addEventListener('click', () => {
