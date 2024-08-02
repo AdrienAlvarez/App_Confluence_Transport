@@ -4,51 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bourse de fret</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <div class="text-center">
-            <img src="{{ url_for('static', filename='logo_ct.jpeg') }}" alt="Confluence Transports Logo" class="logo">
+            <img src="logo_ct.jpeg" alt="Confluence Transports Logo" class="logo">
             <h1>Bourse de fret</h1>
         </div>
 
         <div class="form-container">
-            <form method="POST">
+            <form id="freight-form">
                 <div class="form-group">
                     <label for="prix_vente_fret">Prix de vente du fret (€)</label>
-                    <input type="text" class="form-control" id="prix_vente_fret" name="prix_vente_fret" required>
+                    <input type="number" class="form-control" id="prix_vente_fret" required>
                 </div>
                 <div class="form-group">
                     <label for="heures_jour">Heures de jour</label>
-                    <input type="text" class="form-control" id="heures_jour" name="heures_jour" required>
+                    <input type="number" class="form-control" id="heures_jour" required>
                 </div>
                 <div class="form-group">
                     <label for="heures_nuit">Heures de nuit</label>
-                    <input type="text" class="form-control" id="heures_nuit" name="heures_nuit" required>
+                    <input type="number" class="form-control" id="heures_nuit" required>
                 </div>
                 <div class="form-group">
                     <label for="distance_km">Distance (km)</label>
-                    <input type="text" class="form-control" id="distance_km" name="distance_km" required>
+                    <input type="number" class="form-control" id="distance_km" required>
                 </div>
                 <div class="form-group">
                     <label for="cout_peage">Coût du péage (€)</label>
-                    <input type="text" class="form-control" id="cout_peage" name="cout_peage" required>
+                    <input type="number" class="form-control" id="cout_peage" required>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Calculer</button>
             </form>
 
-            {% if marge %}
-            <div class="results">
+            <div id="results" class="results" style="display: none;">
                 <h2>Résultats:</h2>
-                <p>Marge: {{ marge }}%</p>
-                <p>CRK: {{ crk }} €/km</p>
-                <p>Coût total du fret: {{ cout_total_fret }} €</p>
-                <p>Indice de rentabilité: {{ indice }}</p>
+                <p id="marge"></p>
+                <p id="crk"></p>
+                <p id="cout_total_fret"></p>
+                <p id="indice"></p>
             </div>
-            {% endif %}
         </div>
     </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
