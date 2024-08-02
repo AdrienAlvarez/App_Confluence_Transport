@@ -1,4 +1,4 @@
-/* styles.css */
+/* Global Styles */
 body {
     background-color: #f4f7f6;
     font-family: 'Roboto', sans-serif;
@@ -11,6 +11,7 @@ body {
     height: 100vh;
 }
 
+/* Container and Layout */
 .container {
     width: 100%;
     max-width: 400px;
@@ -31,6 +32,7 @@ h1 {
     text-align: center;
 }
 
+/* Form Styles */
 .form-container {
     background: #ffffff;
     padding: 20px;
@@ -59,6 +61,7 @@ h1 {
     box-sizing: border-box;
 }
 
+/* Button Styles */
 .btn-primary {
     background-color: #1abc9c;
     border: none;
@@ -77,6 +80,7 @@ h1 {
     background-color: #16a085;
 }
 
+/* Results Section */
 .results {
     margin-top: 20px;
     padding: 15px;
@@ -90,7 +94,7 @@ h1 {
     text-align: center;
 }
 
-/* Custom styles for different result scenarios */
+/* Custom Styles for Result Scenarios */
 .red-text {
     color: red;
 }
@@ -109,7 +113,7 @@ h1 {
 
 .btn-orange {
     background-color: orange;
-    color: black; /* Pour rendre le texte visible sur le bouton orange */
+    color: black; /* Ensure text is visible on the orange button */
 }
 
 .btn-green {
@@ -117,12 +121,13 @@ h1 {
 }
 
 .result-message {
-    font-size: 0.85rem; /* Réduction de la taille de la police pour correspondre au bouton "Retour" */
+    font-size: 0.85rem; /* Smaller font size for result messages */
     text-align: center;
-    font-weight: bold; /* Ajoute du poids au texte, comme le bouton */
-    margin-top: 20px; /* Ajoute un peu de marge pour espacer le texte */
+    font-weight: bold; /* Matching the button's text weight */
+    margin-top: 20px; /* Adds space between the title and the message */
 }
 
+/* Responsive Adjustments */
 @media (max-width: 576px) {
     h1 {
         font-size: 1.6rem;
