@@ -95,8 +95,8 @@ h1 {
     color: red;
 }
 
-.yellow-text {
-    color: yellow;
+.orange-text {
+    color: orange;
 }
 
 .green-text {
@@ -107,21 +107,18 @@ h1 {
     background-color: red;
 }
 
-.btn-yellow {
-    background-color: yellow;
-    color: black; /* Pour rendre le texte visible sur le bouton jaune */
+.btn-orange {
+    background-color: orange;
+    color: black; /* Pour rendre le texte visible sur le bouton orange */
 }
 
 .btn-green {
     background-color: green;
 }
 
-/* Ajout pour le message de résultat */
 .result-message {
-    font-size: 1rem; /* Réduire la taille de la police */
+    font-size: 1rem; /* Aligné avec la taille du texte du bouton "Retour" */
     text-align: center;
-    line-height: 1.5; /* Pour un meilleur espacement entre les lignes */
-    white-space: pre-line; /* Pour permettre l'interprétation des sauts de ligne */
 }
 
 @media (max-width: 576px) {
@@ -141,6 +138,10 @@ h1 {
     }
 
     .results p {
+        font-size: 0.9rem;
+    }
+
+    .result-message {
         font-size: 0.9rem;
     }
 }
