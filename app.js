@@ -16,41 +16,44 @@ const url = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/pri
 
 // Fonction pour récupérer le prix du Gazole à Beynost
 async function getPrixGazoleBeynost() {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Échec de la requête : ${response.status}`);
-        }
-        const data = await response.json();
-        let gazoleTrouve = false;
-        let prixGazole = null;
-
-        // Parcourir chaque station
-        for (let station of data) {
-            // Vérifier si la station est située à Beynost
-            if (station.ville === 'Beynost') {
-                // Parcourir les différents carburants pour trouver le prix du Gazole
-                let prixList = JSON.parse(station.prix.replace(/'/g, '"'));
-                for (let prix of prixList) {
-                    if (prix['@nom'] === 'Gazole') {
-                        prixGazole = parseFloat(prix['@valeur']);
-                        gazoleTrouve = true;
-                        break;
-                    }
-                }
-                break;  // On arrête la boucle une fois la station trouvée
+    return fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Échec de la requête : ${response.status}`);
             }
-        }
+            return response.json();
+        })
+        .then(data => {
+            // Parcourir chaque station
+            let found = false;
+            let prixGazole = null;
 
-        if (!gazoleTrouve) {
-            throw new Error("Prix du Gazole introuvable à Beynost.");
-        }
+            for (let station of data) {
+                // Vérifier si la station est située à Beynost
+                if (station.ville === 'Beynost') {
+                    // Parcourir les différents carburants pour trouver le prix du Gazole
+                    let prixList = JSON.parse(station.prix.replace(/'/g, '"'));
+                    for (let prix of prixList) {
+                        if (prix['@nom'] === 'Gazole') {
+                            prixGazole = parseFloat(prix['@valeur']);
+                            found = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
 
-        return prixGazole;
-    } catch (error) {
-        console.error("Erreur lors de la récupération des données:", error);
-        return null;  // Retourne null en cas d'erreur pour signaler l'absence de données
-    }
+            if (!found) {
+                console.error("Désolé, aucune information sur le prix du Gazole n'a été trouvée pour Beynost.");
+            }
+
+            return prixGazole;
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            return null;  // Retourne null en cas d'erreur pour signaler l'absence de données
+        });
 }
 
 // Calcul des coûts de transporteur
