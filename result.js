@@ -1,4 +1,3 @@
-// Charger les résultats du localStorage
 document.addEventListener('DOMContentLoaded', () => {
     const marge = parseFloat(localStorage.getItem('marge'));
     const prixGazole = parseFloat(localStorage.getItem('prixGazole')); // Récupérer le prix du gazole
