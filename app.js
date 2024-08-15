@@ -11,36 +11,38 @@ const lubrifiant_km = 0.0015;
 const pneumatique_km = 0.03;
 const entretien_reparations_km = 0.10;
 
-// Fonction pour récupérer le prix du Gazole à Beynost en utilisant la logique de la seconde app
-async function getPrixGazoleBeynost() {
-    const url = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/exports/json";
+// Données JSON simulées pour l'exemple (remplacer par la vraie réponse API si besoin)
+const station_data = {
+    "id": "1700004",
+    "latitude": "4582600",
+    "longitude": "499900",
+    "cp": "01700",
+    "ville": "BEYNOST",
+    "prix": [
+        {"nom": "Gazole", "id": "1", "maj": "2024-08-02 08:45:00", "valeur": "1.571"},
+        {"nom": "SP95", "id": "2", "maj": "2024-08-02 08:45:00", "valeur": "1.737"},
+        {"nom": "E85", "id": "3", "maj": "2024-08-02 08:45:00", "valeur": "0.739"},
+        {"nom": "GPLc", "id": "4", "maj": "2024-08-02 08:45:00", "valeur": "0.910"},
+        {"nom": "E10", "id": "5", "maj": "2024-08-02 08:45:00", "valeur": "1.671"},
+        {"nom": "SP98", "id": "6", "maj": "2024-08-02 08:45:00", "valeur": "1.791"},
+    ]
+};
 
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Échec de la requête : ${response.status}`);
-        }
-        const data = await response.json();
-
-        for (let station of data) {
-            if (station.ville.toLowerCase() === 'beynost') {
-                let prixList = JSON.parse(station.prix.replace(/'/g, '"'));
-                for (let prix of prixList) {
-                    if (prix['@nom'] === 'Gazole') {
-                        return parseFloat(prix['@valeur']);
-                    }
-                }
-                break;
-            }
-        }
-        throw new Error("Prix du Gazole introuvable à Beynost.");
-    } catch (error) {
-        console.error("Erreur lors de la récupération des données:", error);
-        return null;  // Retourne null en cas d'erreur pour signaler l'absence de données
+// Extraire le prix du Gazole
+let prix_carburant_litre = null;
+for (let prix of station_data.prix) {
+    if (prix.nom === "Gazole") {
+        prix_carburant_litre = parseFloat(prix.valeur);
+        console.log(`Le prix du Gazole à la station ID 1700004 est : ${prix_carburant_litre} €`);
     }
 }
 
-// Calcul des coûts de transporteur
+// Si le prix du Gazole n'est pas trouvé, il faut arrêter le programme
+if (prix_carburant_litre === null) {
+    alert("Prix du Gazole introuvable dans les données fournies.");
+    throw new Error("Prix du Gazole introuvable dans les données fournies.");
+}
+
 function calculerCoutTransporteur(heuresJour, heuresNuit) {
     const salaireJour = heuresJour * salaire_heure_jour;
     const salaireNuit = heuresNuit * salaire_heure_nuit;
@@ -48,21 +50,18 @@ function calculerCoutTransporteur(heuresJour, heuresNuit) {
     return salaireBrut + (salaireBrut * charge_sociale_taux);
 }
 
-// Calcul du coût par kilomètre (CRK)
 function calculerCrk(distanceKm, prixCarburantLitre) {
     const carburantKm = consommation_tgx * prixCarburantLitre;
     const chargesVariablesKm = carburantKm + lubrifiant_km + pneumatique_km + entretien_reparations_km;
     return chargesVariablesKm;
 }
 
-// Calcul de la rentabilité
 function calculerRentabilite(distanceKm, prixVenteFret, crk, coutPeage, coutTransporteur) {
     const coutTotalFret = (crk * distanceKm) + (coutPeage * 4) + coutTransporteur;
     const marge = ((prixVenteFret - coutTotalFret) / prixVenteFret) * 100;
     return { marge, coutTotalFret };
 }
 
-// Définir l'indice de rentabilité en fonction de la marge
 function indiceRentabilite(marge) {
     if (marge < 20) {
         return "Orange";
@@ -75,8 +74,8 @@ function indiceRentabilite(marge) {
     }
 }
 
-// Gestion de la soumission du formulaire et affichage des résultats
-document.getElementById('freight-form').addEventListener('submit', async function(event) {
+// Gérer la soumission du formulaire et afficher les résultats
+document.getElementById('freight-form').addEventListener('submit', function(event) {
     event.preventDefault();
 
     // Récupérer les valeurs du formulaire
@@ -89,15 +88,6 @@ document.getElementById('freight-form').addEventListener('submit', async functio
     // Vérification des valeurs
     if (isNaN(prixVenteFret) || isNaN(heuresJour) || isNaN(heuresNuit) || isNaN(distanceKm) || isNaN(coutPeage)) {
         alert("Veuillez remplir correctement tous les champs.");
-        return;
-    }
-
-    // Récupérer le prix du Gazole à Beynost
-    const prix_carburant_litre = await getPrixGazoleBeynost();
-
-    // Si le prix du Gazole n'est pas trouvé, il faut arrêter le programme
-    if (prix_carburant_litre === null) {
-        alert("Prix du Gazole introuvable à Beynost.");
         return;
     }
 
