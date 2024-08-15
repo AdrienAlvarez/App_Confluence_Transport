@@ -17,24 +17,25 @@ async function getPrixGazoleBeynost() {
 
     try {
         const response = await fetch(url);
-        if (response.ok) {
-            const data = await response.json();
-            for (let station of data) {
-                // Comparaison de la ville en minuscules pour plus de robustesse
-                if (station.ville.toLowerCase() === 'beynost') {
-                    for (let prix of eval(station.prix)) {
-                        if (prix['@nom'] === 'Gazole') {
-                            return parseFloat(prix['@valeur']);
-                        }
-                    }
-                }
-            }
-            throw new Error("Prix du Gazole à Beynost introuvable.");
-        } else {
+        if (!response.ok) {
             throw new Error(`Échec de la requête : ${response.status}`);
         }
+
+        const data = await response.json();
+        const station = data.find(station => station.ville.toLowerCase() === 'beynost');
+        if (!station) {
+            throw new Error("Ville de Beynost introuvable dans les données.");
+        }
+
+        const prixGazole = station.prix.find(prix => prix['@nom'] === 'Gazole');
+        if (!prixGazole) {
+            throw new Error("Prix du Gazole introuvable à Beynost.");
+        }
+
+        return parseFloat(prixGazole['@valeur']);
     } catch (error) {
         console.error("Erreur lors de la récupération des données:", error);
+        return null;  // Retourne null en cas d'erreur pour signaler l'absence de données
     }
 }
 
@@ -94,7 +95,7 @@ document.getElementById('freight-form').addEventListener('submit', async functio
     const prix_carburant_litre = await getPrixGazoleBeynost();
 
     // Si le prix du Gazole n'est pas trouvé, il faut arrêter le programme
-    if (!prix_carburant_litre) {
+    if (prix_carburant_litre === null) {
         alert("Prix du Gazole introuvable à Beynost.");
         return;
     }
