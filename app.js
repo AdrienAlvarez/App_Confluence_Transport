@@ -54,15 +54,9 @@ async function getPrixGazoleBeynost() {
             console.error('Erreur:', error);
             return null;  // Retourne null en cas d'erreur pour signaler l'absence de données
         });
-
 }
 
-// Si le prix du Gazole n'est pas trouvé, il faut arrêter le programme
-if (prix_carburant_litre === null) {
-    alert("Prix du Gazole introuvable dans les données fournies.");
-    throw new Error("Prix du Gazole introuvable dans les données fournies.");
-}
-
+// Calcul des coûts de transporteur
 function calculerCoutTransporteur(heuresJour, heuresNuit) {
     const salaireJour = heuresJour * salaire_heure_jour;
     const salaireNuit = heuresNuit * salaire_heure_nuit;
@@ -70,18 +64,21 @@ function calculerCoutTransporteur(heuresJour, heuresNuit) {
     return salaireBrut + (salaireBrut * charge_sociale_taux);
 }
 
+// Calcul du coût par kilomètre (CRK)
 function calculerCrk(distanceKm, prixCarburantLitre) {
     const carburantKm = consommation_tgx * prixCarburantLitre;
     const chargesVariablesKm = carburantKm + lubrifiant_km + pneumatique_km + entretien_reparations_km;
     return chargesVariablesKm;
 }
 
+// Calcul de la rentabilité
 function calculerRentabilite(distanceKm, prixVenteFret, crk, coutPeage, coutTransporteur) {
     const coutTotalFret = (crk * distanceKm) + (coutPeage * 4) + coutTransporteur;
     const marge = ((prixVenteFret - coutTotalFret) / prixVenteFret) * 100;
     return { marge, coutTotalFret };
 }
 
+// Définir l'indice de rentabilité en fonction de la marge
 function indiceRentabilite(marge) {
     if (marge < 20) {
         return "Orange";
@@ -94,6 +91,7 @@ function indiceRentabilite(marge) {
     }
 }
 
+// Gestion de la soumission du formulaire et affichage des résultats
 document.getElementById('freight-form').addEventListener('submit', async function(event) {
     event.preventDefault();
 
@@ -119,9 +117,6 @@ document.getElementById('freight-form').addEventListener('submit', async functio
         return;
     }
 
-    // Stocker le prix du gazole dans le localStorage pour l'utiliser dans la page des résultats
-    localStorage.setItem('prixGazole', prix_carburant_litre);
-  
     // Calculer les coûts
     const coutTransporteur = calculerCoutTransporteur(heuresJour, heuresNuit);
     const crk = calculerCrk(distanceKm, prix_carburant_litre);
@@ -137,4 +132,3 @@ document.getElementById('freight-form').addEventListener('submit', async functio
     // Rediriger vers la page des résultats
     window.location.href = 'result.html';
 });
-
