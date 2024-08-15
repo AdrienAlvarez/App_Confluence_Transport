@@ -1,10 +1,11 @@
-// Charger les résultats du localStorage
 document.addEventListener('DOMContentLoaded', () => {
     const marge = parseFloat(localStorage.getItem('marge'));
+    const prixGazole = parseFloat(localStorage.getItem('prixGazole')); // Récupérer le prix du gazole
 
     const resultTitle = document.getElementById('result-title');
     const resultMessage = document.getElementById('result-message');
     const retourBtn = document.getElementById('retour-btn');
+    const prixGazoleElement = document.getElementById('prix-gazole'); // Élément pour afficher le prix du gazole
 
     if (marge < 20) {
         resultMessage.textContent = `La marge de ${marge}% est insuffisante pour réaliser ce transport.`;
@@ -21,6 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     resultMessage.classList.add('result-message'); // Appliquer la classe pour la taille du texte
+
+    // Afficher le prix du gazole à Beynost en petit sous le message de résultat
+    if (!isNaN(prixGazole)) {
+        prixGazoleElement.textContent = `Prix actuel du gazole à Beynost : ${prixGazole.toFixed(3)} €/L`;
+    } else {
+        prixGazoleElement.textContent = "Prix du gazole à Beynost indisponible.";
+    }
 
     // Gestion du bouton retour
     retourBtn.addEventListener('click', () => {

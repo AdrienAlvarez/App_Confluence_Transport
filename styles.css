@@ -127,6 +127,15 @@ h1 {
     margin-top: 20px; /* Adds space between the title and the message */
 }
 
+/* New Styles for Centered Price Information */
+#prix-gazole {
+    text-align: center;
+    font-size: 0.9rem; /* Adjust font size as needed */
+    margin-top: 10px; /* Space above the price info */
+    color: #555; /* Text color, adjust as needed */
+    display: block;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 576px) {
     h1 {

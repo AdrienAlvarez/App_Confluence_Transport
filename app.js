@@ -11,30 +11,50 @@ const lubrifiant_km = 0.0015;
 const pneumatique_km = 0.03;
 const entretien_reparations_km = 0.10;
 
-// Données JSON simulées pour l'exemple (remplacer par la vraie réponse API si besoin)
-const station_data = {
-    "id": "1700004",
-    "latitude": "4582600",
-    "longitude": "499900",
-    "cp": "01700",
-    "ville": "BEYNOST",
-    "prix": [
-        {"nom": "Gazole", "id": "1", "maj": "2024-08-02 08:45:00", "valeur": "1.571"},
-        {"nom": "SP95", "id": "2", "maj": "2024-08-02 08:45:00", "valeur": "1.737"},
-        {"nom": "E85", "id": "3", "maj": "2024-08-02 08:45:00", "valeur": "0.739"},
-        {"nom": "GPLc", "id": "4", "maj": "2024-08-02 08:45:00", "valeur": "0.910"},
-        {"nom": "E10", "id": "5", "maj": "2024-08-02 08:45:00", "valeur": "1.671"},
-        {"nom": "SP98", "id": "6", "maj": "2024-08-02 08:45:00", "valeur": "1.791"},
-    ]
-};
+// URL de l'API pour récupérer les données au format JSON
+const url = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/exports/json";
 
-// Extraire le prix du Gazole
-let prix_carburant_litre = null;
-for (let prix of station_data.prix) {
-    if (prix.nom === "Gazole") {
-        prix_carburant_litre = parseFloat(prix.valeur);
-        console.log(`Le prix du Gazole à la station ID 1700004 est : ${prix_carburant_litre} €`);
-    }
+// Fonction pour récupérer le prix du Gazole à Beynost
+async function getPrixGazoleBeynost() {
+    return fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Échec de la requête : ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Parcourir chaque station
+            let found = false;
+            let prixGazole = null;
+
+            for (let station of data) {
+                // Vérifier si la station est située à Beynost
+                if (station.ville === 'Beynost') {
+                    // Parcourir les différents carburants pour trouver le prix du Gazole
+                    let prixList = JSON.parse(station.prix.replace(/'/g, '"'));
+                    for (let prix of prixList) {
+                        if (prix['@nom'] === 'Gazole') {
+                            prixGazole = parseFloat(prix['@valeur']);
+                            found = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+
+            if (!found) {
+                console.error("Désolé, aucune information sur le prix du Gazole n'a été trouvée pour Beynost.");
+            }
+
+            return prixGazole;
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            return null;  // Retourne null en cas d'erreur pour signaler l'absence de données
+        });
+
 }
 
 // Si le prix du Gazole n'est pas trouvé, il faut arrêter le programme
@@ -74,8 +94,7 @@ function indiceRentabilite(marge) {
     }
 }
 
-// Gérer la soumission du formulaire et afficher les résultats
-document.getElementById('freight-form').addEventListener('submit', function(event) {
+document.getElementById('freight-form').addEventListener('submit', async function(event) {
     event.preventDefault();
 
     // Récupérer les valeurs du formulaire
@@ -91,6 +110,18 @@ document.getElementById('freight-form').addEventListener('submit', function(even
         return;
     }
 
+    // Récupérer le prix du Gazole à Beynost
+    const prix_carburant_litre = await getPrixGazoleBeynost();
+
+    // Si le prix du Gazole n'est pas trouvé, il faut arrêter le programme
+    if (prix_carburant_litre === null) {
+        alert("Prix du Gazole introuvable à Beynost.");
+        return;
+    }
+
+    // Stocker le prix du gazole dans le localStorage pour l'utiliser dans la page des résultats
+    localStorage.setItem('prixGazole', prix_carburant_litre);
+  
     // Calculer les coûts
     const coutTransporteur = calculerCoutTransporteur(heuresJour, heuresNuit);
     const crk = calculerCrk(distanceKm, prix_carburant_litre);
@@ -106,3 +137,4 @@ document.getElementById('freight-form').addEventListener('submit', function(even
     // Rediriger vers la page des résultats
     window.location.href = 'result.html';
 });
+
