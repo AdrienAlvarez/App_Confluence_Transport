@@ -91,7 +91,6 @@ function indiceRentabilite(marge) {
     }
 }
 
-// Gestion de la soumission du formulaire et affichage des résultats
 document.getElementById('freight-form').addEventListener('submit', async function(event) {
     event.preventDefault();
 
@@ -117,6 +116,9 @@ document.getElementById('freight-form').addEventListener('submit', async functio
         return;
     }
 
+    // Stocker le prix du gazole dans le localStorage pour l'utiliser dans la page des résultats
+    localStorage.setItem('prixGazole', prix_carburant_litre);
+
     // Calculer les coûts
     const coutTransporteur = calculerCoutTransporteur(heuresJour, heuresNuit);
     const crk = calculerCrk(distanceKm, prix_carburant_litre);
@@ -132,3 +134,4 @@ document.getElementById('freight-form').addEventListener('submit', async functio
     // Rediriger vers la page des résultats
     window.location.href = 'result.html';
 });
+
