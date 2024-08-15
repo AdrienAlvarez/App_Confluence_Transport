@@ -22,24 +22,27 @@ async function getPrixGazoleBeynost() {
             throw new Error(`Échec de la requête : ${response.status}`);
         }
         const data = await response.json();
-        let found = false;
+        let gazoleTrouve = false;
         let prixGazole = null;
 
+        // Parcourir chaque station
         for (let station of data) {
-            if (station.ville.toLowerCase() === 'beynost') {
+            // Vérifier si la station est située à Beynost
+            if (station.ville === 'Beynost') {
+                // Parcourir les différents carburants pour trouver le prix du Gazole
                 let prixList = JSON.parse(station.prix.replace(/'/g, '"'));
                 for (let prix of prixList) {
                     if (prix['@nom'] === 'Gazole') {
                         prixGazole = parseFloat(prix['@valeur']);
-                        found = true;
+                        gazoleTrouve = true;
                         break;
                     }
                 }
-                break;
+                break;  // On arrête la boucle une fois la station trouvée
             }
         }
 
-        if (!found) {
+        if (!gazoleTrouve) {
             throw new Error("Prix du Gazole introuvable à Beynost.");
         }
 
