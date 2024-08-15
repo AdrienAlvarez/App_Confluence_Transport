@@ -11,44 +11,29 @@ const lubrifiant_km = 0.0015;
 const pneumatique_km = 0.03;
 const entretien_reparations_km = 0.10;
 
-// URL de l'API pour récupérer les données au format JSON
-const url = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/exports/json";
-
-// Fonction pour récupérer le prix du Gazole à Beynost
+// Fonction pour récupérer le prix du Gazole à Beynost en utilisant la logique de la seconde app
 async function getPrixGazoleBeynost() {
+    const url = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/exports/json";
+
     try {
         const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Échec de la requête : ${response.status}`);
         }
         const data = await response.json();
-        let gazoleTrouve = false;
-        let prixGazole = null;
 
         for (let station of data) {
             if (station.ville.toLowerCase() === 'beynost') {
-                try {
-                    let prixList = JSON.parse(station.prix.replace(/'/g, '"'));
-                    for (let prix of prixList) {
-                        if (prix['@nom'] === 'Gazole') {
-                            prixGazole = parseFloat(prix['@valeur']);
-                            gazoleTrouve = true;
-                            break;
-                        }
+                let prixList = JSON.parse(station.prix.replace(/'/g, '"'));
+                for (let prix of prixList) {
+                    if (prix['@nom'] === 'Gazole') {
+                        return parseFloat(prix['@valeur']);
                     }
-                } catch (error) {
-                    console.error("Erreur lors du traitement du prix de la station:", error);
                 }
-                
-                if (gazoleTrouve) break;
+                break;
             }
         }
-
-        if (!gazoleTrouve) {
-            throw new Error("Prix du Gazole introuvable à Beynost.");
-        }
-
-        return prixGazole;
+        throw new Error("Prix du Gazole introuvable à Beynost.");
     } catch (error) {
         console.error("Erreur lors de la récupération des données:", error);
         return null;  // Retourne null en cas d'erreur pour signaler l'absence de données
