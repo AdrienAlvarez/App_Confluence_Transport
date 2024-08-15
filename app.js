@@ -11,37 +11,73 @@ const lubrifiant_km = 0.0015;
 const pneumatique_km = 0.03;
 const entretien_reparations_km = 0.10;
 
-// Données JSON simulées pour l'exemple (remplacer par la vraie réponse API si besoin)
-const station_data = {
-    "id": "1700004",
-    "latitude": "4582600",
-    "longitude": "499900",
-    "cp": "01700",
-    "ville": "BEYNOST",
-    "prix": [
-        {"nom": "Gazole", "id": "1", "maj": "2024-08-02 08:45:00", "valeur": "1.571"},
-        {"nom": "SP95", "id": "2", "maj": "2024-08-02 08:45:00", "valeur": "1.737"},
-        {"nom": "E85", "id": "3", "maj": "2024-08-02 08:45:00", "valeur": "0.739"},
-        {"nom": "GPLc", "id": "4", "maj": "2024-08-02 08:45:00", "valeur": "0.910"},
-        {"nom": "E10", "id": "5", "maj": "2024-08-02 08:45:00", "valeur": "1.671"},
-        {"nom": "SP98", "id": "6", "maj": "2024-08-02 08:45:00", "valeur": "1.791"},
-    ]
-};
+// Fonction pour obtenir le prix du Gazole via l'API
+async function obtenirPrixCarburant(ville) {
+    const url = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/exports/json";
 
-// Extraire le prix du Gazole
-let prix_carburant_litre = null;
-for (let prix of station_data.prix) {
-    if (prix.nom === "Gazole") {
-        prix_carburant_litre = parseFloat(prix.valeur);
-        console.log(`Le prix du Gazole à la station ID 1700004 est : ${prix_carburant_litre} €`);
+    try {
+        const response = await fetch(url);
+        if (response.ok) {
+            const data = await response.json();
+            for (let station of data) {
+                if (station.ville.toLowerCase() === ville.toLowerCase()) {
+                    for (let prix of eval(station.prix)) {
+                        if (prix['@nom'] === 'Gazole') {
+                            console.log(`Le prix du Gazole à ${ville} est : ${prix['@valeur']} €`);
+                            return parseFloat(prix['@valeur']);
+                        }
+                    }
+                }
+            }
+        } else {
+            console.error("Erreur lors de la récupération des données:", response.status);
+        }
+    } catch (error) {
+        console.error("Erreur lors de l'appel à l'API:", error);
     }
+    return null;
 }
 
-// Si le prix du Gazole n'est pas trouvé, il faut arrêter le programme
-if (prix_carburant_litre === null) {
-    alert("Prix du Gazole introuvable dans les données fournies.");
-    throw new Error("Prix du Gazole introuvable dans les données fournies.");
-}
+// Gérer la soumission du formulaire et afficher les résultats
+document.getElementById('freight-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    // Récupérer les valeurs du formulaire
+    const prixVenteFret = parseFloat(document.getElementById('prix_vente_fret').value);
+    const heuresJour = parseFloat(document.getElementById('heures_jour').value);
+    const heuresNuit = parseFloat(document.getElementById('heures_nuit').value);
+    const distanceKm = parseFloat(document.getElementById('distance_km').value);
+    const coutPeage = parseFloat(document.getElementById('cout_peage').value);
+
+    // Vérification des valeurs
+    if (isNaN(prixVenteFret) || isNaN(heuresJour) || isNaN(heuresNuit) || isNaN(distanceKm) || isNaN(coutPeage)) {
+        alert("Veuillez remplir correctement tous les champs.");
+        return;
+    }
+
+    // Obtenir le prix du carburant
+    const prix_carburant_litre = await obtenirPrixCarburant('Beynost');
+
+    if (prix_carburant_litre === null) {
+        alert("Prix du Gazole introuvable pour Beynost.");
+        return;
+    }
+
+    // Calculer les coûts
+    const coutTransporteur = calculerCoutTransporteur(heuresJour, heuresNuit);
+    const crk = calculerCrk(distanceKm, prix_carburant_litre);
+    const { marge, coutTotalFret } = calculerRentabilite(distanceKm, prixVenteFret, crk, coutPeage, coutTransporteur);
+    const indice = indiceRentabilite(marge);
+
+    // Stocker les résultats dans le localStorage
+    localStorage.setItem('marge', marge.toFixed(2));
+    localStorage.setItem('crk', crk.toFixed(4));
+    localStorage.setItem('coutTotalFret', coutTotalFret.toFixed(2));
+    localStorage.setItem('indice', indice);
+
+    // Rediriger vers la page des résultats
+    window.location.href = 'result.html';
+});
 
 function calculerCoutTransporteur(heuresJour, heuresNuit) {
     const salaireJour = heuresJour * salaire_heure_jour;
@@ -73,36 +109,3 @@ function indiceRentabilite(marge) {
         return "Rouge";
     }
 }
-
-// Gérer la soumission du formulaire et afficher les résultats
-document.getElementById('freight-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    // Récupérer les valeurs du formulaire
-    const prixVenteFret = parseFloat(document.getElementById('prix_vente_fret').value);
-    const heuresJour = parseFloat(document.getElementById('heures_jour').value);
-    const heuresNuit = parseFloat(document.getElementById('heures_nuit').value);
-    const distanceKm = parseFloat(document.getElementById('distance_km').value);
-    const coutPeage = parseFloat(document.getElementById('cout_peage').value);
-
-    // Vérification des valeurs
-    if (isNaN(prixVenteFret) || isNaN(heuresJour) || isNaN(heuresNuit) || isNaN(distanceKm) || isNaN(coutPeage)) {
-        alert("Veuillez remplir correctement tous les champs.");
-        return;
-    }
-
-    // Calculer les coûts
-    const coutTransporteur = calculerCoutTransporteur(heuresJour, heuresNuit);
-    const crk = calculerCrk(distanceKm, prix_carburant_litre);
-    const { marge, coutTotalFret } = calculerRentabilite(distanceKm, prixVenteFret, crk, coutPeage, coutTransporteur);
-    const indice = indiceRentabilite(marge);
-
-    // Stocker les résultats dans le localStorage
-    localStorage.setItem('marge', marge.toFixed(2));
-    localStorage.setItem('crk', crk.toFixed(4));
-    localStorage.setItem('coutTotalFret', coutTotalFret.toFixed(2));
-    localStorage.setItem('indice', indice);
-
-    // Rediriger vers la page des résultats
-    window.location.href = 'result.html';
-});
