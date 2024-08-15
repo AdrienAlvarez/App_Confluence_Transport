@@ -20,7 +20,8 @@ async function getPrixGazoleBeynost() {
         if (response.ok) {
             const data = await response.json();
             for (let station of data) {
-                if (station.ville === 'BEYNOST') {
+                // Comparaison de la ville en minuscules pour plus de robustesse
+                if (station.ville.toLowerCase() === 'beynost') {
                     for (let prix of eval(station.prix)) {
                         if (prix['@nom'] === 'Gazole') {
                             return parseFloat(prix['@valeur']);
