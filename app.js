@@ -11,8 +11,8 @@ const lubrifiant_km = 0.0015;
 const pneumatique_km = 0.03;
 const entretien_reparations_km = 0.10;
 
-// Fonction pour obtenir le prix du Gazole via l'API
-async function obtenirPrixCarburant(ville) {
+// Fonction pour récupérer le prix du Gazole à Beynost via l'API
+async function getPrixGazoleBeynost() {
     const url = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/exports/json";
 
     try {
@@ -20,25 +20,59 @@ async function obtenirPrixCarburant(ville) {
         if (response.ok) {
             const data = await response.json();
             for (let station of data) {
-                if (station.ville.toLowerCase() === ville.toLowerCase()) {
+                if (station.ville === 'BEYNOST') {
                     for (let prix of eval(station.prix)) {
                         if (prix['@nom'] === 'Gazole') {
-                            console.log(`Le prix du Gazole à ${ville} est : ${prix['@valeur']} €`);
                             return parseFloat(prix['@valeur']);
                         }
                     }
                 }
             }
+            throw new Error("Prix du Gazole à Beynost introuvable.");
         } else {
-            console.error("Erreur lors de la récupération des données:", response.status);
+            throw new Error(`Échec de la requête : ${response.status}`);
         }
     } catch (error) {
-        console.error("Erreur lors de l'appel à l'API:", error);
+        console.error("Erreur lors de la récupération des données:", error);
     }
-    return null;
 }
 
-// Gérer la soumission du formulaire et afficher les résultats
+// Calcul des coûts de transporteur
+function calculerCoutTransporteur(heuresJour, heuresNuit) {
+    const salaireJour = heuresJour * salaire_heure_jour;
+    const salaireNuit = heuresNuit * salaire_heure_nuit;
+    const salaireBrut = salaireJour + salaireNuit;
+    return salaireBrut + (salaireBrut * charge_sociale_taux);
+}
+
+// Calcul du coût par kilomètre (CRK)
+function calculerCrk(distanceKm, prixCarburantLitre) {
+    const carburantKm = consommation_tgx * prixCarburantLitre;
+    const chargesVariablesKm = carburantKm + lubrifiant_km + pneumatique_km + entretien_reparations_km;
+    return chargesVariablesKm;
+}
+
+// Calcul de la rentabilité
+function calculerRentabilite(distanceKm, prixVenteFret, crk, coutPeage, coutTransporteur) {
+    const coutTotalFret = (crk * distanceKm) + (coutPeage * 4) + coutTransporteur;
+    const marge = ((prixVenteFret - coutTotalFret) / prixVenteFret) * 100;
+    return { marge, coutTotalFret };
+}
+
+// Définir l'indice de rentabilité en fonction de la marge
+function indiceRentabilite(marge) {
+    if (marge < 20) {
+        return "Orange";
+    } else if (marge >= 20 && marge < 27) {
+        return "Jaune";
+    } else if (marge > 33) {
+        return "Vert";
+    } else {
+        return "Rouge";
+    }
+}
+
+// Gestion de la soumission du formulaire et affichage des résultats
 document.getElementById('freight-form').addEventListener('submit', async function(event) {
     event.preventDefault();
 
@@ -55,11 +89,12 @@ document.getElementById('freight-form').addEventListener('submit', async functio
         return;
     }
 
-    // Obtenir le prix du carburant
-    const prix_carburant_litre = await obtenirPrixCarburant('Beynost');
+    // Récupérer le prix du Gazole à Beynost
+    const prix_carburant_litre = await getPrixGazoleBeynost();
 
-    if (prix_carburant_litre === null) {
-        alert("Prix du Gazole introuvable pour Beynost.");
+    // Si le prix du Gazole n'est pas trouvé, il faut arrêter le programme
+    if (!prix_carburant_litre) {
+        alert("Prix du Gazole introuvable à Beynost.");
         return;
     }
 
@@ -78,34 +113,3 @@ document.getElementById('freight-form').addEventListener('submit', async functio
     // Rediriger vers la page des résultats
     window.location.href = 'result.html';
 });
-
-function calculerCoutTransporteur(heuresJour, heuresNuit) {
-    const salaireJour = heuresJour * salaire_heure_jour;
-    const salaireNuit = heuresNuit * salaire_heure_nuit;
-    const salaireBrut = salaireJour + salaireNuit;
-    return salaireBrut + (salaireBrut * charge_sociale_taux);
-}
-
-function calculerCrk(distanceKm, prixCarburantLitre) {
-    const carburantKm = consommation_tgx * prixCarburantLitre;
-    const chargesVariablesKm = carburantKm + lubrifiant_km + pneumatique_km + entretien_reparations_km;
-    return chargesVariablesKm;
-}
-
-function calculerRentabilite(distanceKm, prixVenteFret, crk, coutPeage, coutTransporteur) {
-    const coutTotalFret = (crk * distanceKm) + (coutPeage * 4) + coutTransporteur;
-    const marge = ((prixVenteFret - coutTotalFret) / prixVenteFret) * 100;
-    return { marge, coutTotalFret };
-}
-
-function indiceRentabilite(marge) {
-    if (marge < 20) {
-        return "Orange";
-    } else if (marge >= 20 && marge < 27) {
-        return "Jaune";
-    } else if (marge > 33) {
-        return "Vert";
-    } else {
-        return "Rouge";
-    }
-}
