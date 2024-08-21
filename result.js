@@ -7,20 +7,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const retourBtn = document.getElementById('retour-btn');
     const prixGazoleElement = document.getElementById('prix-gazole'); // Élément pour afficher le prix du gazole
 
+    let resultCategory = '';
+
     if (marge < 20) {
-        resultMessage.textContent = `La marge de ${marge}% est insuffisante pour réaliser ce transport.`;
+        resultCategory = 'Insuffisante';
         resultTitle.classList.add('red-text');
         retourBtn.classList.add('btn-red');
     } else if (marge >= 20 && marge <= 27) {
-        resultMessage.textContent = `La marge de ${marge}% est acceptable, mais reste moyenne pour ce transport.`;
+        resultCategory = 'Acceptable';
         resultTitle.classList.add('orange-text');
         retourBtn.classList.add('btn-orange');
     } else {
-        resultMessage.textContent = `La marge de ${marge}% est excellente, vous pouvez effectuer ce transport en toute confiance.`;
+        resultCategory = 'Excellente';
         resultTitle.classList.add('green-text');
         retourBtn.classList.add('btn-green');
     }
 
+    resultTitle.textContent = resultCategory;
+    resultMessage.textContent = `La marge de ${marge}%`;
     resultMessage.classList.add('result-message'); // Appliquer la classe pour la taille du texte
 
     // Afficher le prix du gazole à Beynost en petit sous le message de résultat
