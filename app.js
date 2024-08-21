@@ -11,6 +11,9 @@ const lubrifiant_km = 0.0015;
 const pneumatique_km = 0.03;
 const entretien_reparations_km = 0.10;
 
+// Coefficient de consommation supplémentaire par tonne
+const coefficient_poids = 0.007; // Exemple de coefficient
+
 // URL de l'API pour récupérer les données au format JSON
 const url = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/exports/json";
 
@@ -24,14 +27,11 @@ async function getPrixGazoleBeynost() {
             return response.json();
         })
         .then(data => {
-            // Parcourir chaque station
             let found = false;
             let prixGazole = null;
 
             for (let station of data) {
-                // Vérifier si la station est située à Beynost
                 if (station.ville === 'Beynost') {
-                    // Parcourir les différents carburants pour trouver le prix du Gazole
                     let prixList = JSON.parse(station.prix.replace(/'/g, '"'));
                     for (let prix of prixList) {
                         if (prix['@nom'] === 'Gazole') {
@@ -54,15 +54,9 @@ async function getPrixGazoleBeynost() {
             console.error('Erreur:', error);
             return null;  // Retourne null en cas d'erreur pour signaler l'absence de données
         });
-
 }
 
-// Si le prix du Gazole n'est pas trouvé, il faut arrêter le programme
-if (prix_carburant_litre === null) {
-    alert("Prix du Gazole introuvable dans les données fournies.");
-    throw new Error("Prix du Gazole introuvable dans les données fournies.");
-}
-
+// Fonction pour calculer le coût du transporteur
 function calculerCoutTransporteur(heuresJour, heuresNuit) {
     const salaireJour = heuresJour * salaire_heure_jour;
     const salaireNuit = heuresNuit * salaire_heure_nuit;
@@ -70,18 +64,29 @@ function calculerCoutTransporteur(heuresJour, heuresNuit) {
     return salaireBrut + (salaireBrut * charge_sociale_taux);
 }
 
-function calculerCrk(distanceKm, prixCarburantLitre) {
-    const carburantKm = consommation_tgx * prixCarburantLitre;
-    const chargesVariablesKm = carburantKm + lubrifiant_km + pneumatique_km + entretien_reparations_km;
-    return chargesVariablesKm;
+// Fonction pour calculer le coût variable par kilomètre (CRK) ajusté selon le poids
+function calculerCrkAjuste(distanceKm, prixCarburantLitre, poidsAller, poidsRetour) {
+    const consommationAller = consommation_tgx * (1 + coefficient_poids * poidsAller);
+    const consommationRetour = consommation_tgx * (1 + coefficient_poids * poidsRetour);
+    const carburantAller = consommationAller * prixCarburantLitre;
+    const carburantRetour = consommationRetour * prixCarburantLitre;
+
+    const chargesVariablesAller = carburantAller + lubrifiant_km + pneumatique_km + entretien_reparations_km;
+    const chargesVariablesRetour = carburantRetour + lubrifiant_km + pneumatique_km + entretien_reparations_km;
+
+    // Calcul moyen des coûts pour l'aller-retour
+    const chargesVariablesMoyennes = (chargesVariablesAller + chargesVariablesRetour) / 2;
+    return chargesVariablesMoyennes;
 }
 
+// Fonction pour calculer la rentabilité
 function calculerRentabilite(distanceKm, prixVenteFret, crk, coutPeage, coutTransporteur) {
     const coutTotalFret = (crk * distanceKm) + (coutPeage * 4) + coutTransporteur;
     const marge = ((prixVenteFret - coutTotalFret) / prixVenteFret) * 100;
     return { marge, coutTotalFret };
 }
 
+// Fonction pour déterminer l'indice de rentabilité
 function indiceRentabilite(marge) {
     if (marge < 20) {
         return "Orange";
@@ -94,6 +99,7 @@ function indiceRentabilite(marge) {
     }
 }
 
+// Gestionnaire d'événement pour le formulaire
 document.getElementById('freight-form').addEventListener('submit', async function(event) {
     event.preventDefault();
 
@@ -103,9 +109,11 @@ document.getElementById('freight-form').addEventListener('submit', async functio
     const heuresNuit = parseFloat(document.getElementById('heures_nuit').value);
     const distanceKm = parseFloat(document.getElementById('distance_km').value);
     const coutPeage = parseFloat(document.getElementById('cout_peage').value);
+    const poidsAller = parseFloat(document.getElementById('poids_aller').value);
+    const poidsRetour = parseFloat(document.getElementById('poids_retour').value);
 
     // Vérification des valeurs
-    if (isNaN(prixVenteFret) || isNaN(heuresJour) || isNaN(heuresNuit) || isNaN(distanceKm) || isNaN(coutPeage)) {
+    if (isNaN(prixVenteFret) || isNaN(heuresJour) || isNaN(heuresNuit) || isNaN(distanceKm) || isNaN(coutPeage) || isNaN(poidsAller) || isNaN(poidsRetour)) {
         alert("Veuillez remplir correctement tous les champs.");
         return;
     }
@@ -119,22 +127,18 @@ document.getElementById('freight-form').addEventListener('submit', async functio
         return;
     }
 
-    // Stocker le prix du gazole dans le localStorage pour l'utiliser dans la page des résultats
-    localStorage.setItem('prixGazole', prix_carburant_litre);
-  
     // Calculer les coûts
     const coutTransporteur = calculerCoutTransporteur(heuresJour, heuresNuit);
-    const crk = calculerCrk(distanceKm, prix_carburant_litre);
-    const { marge, coutTotalFret } = calculerRentabilite(distanceKm, prixVenteFret, crk, coutPeage, coutTransporteur);
+    const crkAjuste = calculerCrkAjuste(distanceKm, prix_carburant_litre, poidsAller, poidsRetour);
+    const { marge, coutTotalFret } = calculerRentabilite(distanceKm, prixVenteFret, crkAjuste, coutPeage, coutTransporteur);
     const indice = indiceRentabilite(marge);
 
     // Stocker les résultats dans le localStorage
     localStorage.setItem('marge', marge.toFixed(2));
-    localStorage.setItem('crk', crk.toFixed(4));
+    localStorage.setItem('crk', crkAjuste.toFixed(4));
     localStorage.setItem('coutTotalFret', coutTotalFret.toFixed(2));
     localStorage.setItem('indice', indice);
 
     // Rediriger vers la page des résultats
     window.location.href = 'result.html';
 });
-
